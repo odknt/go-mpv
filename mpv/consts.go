@@ -416,6 +416,13 @@ const (
 	 * (this forces the client to empty the queue completely).
 	 */
 	EVENT_QUEUE_OVERFLOW EventId = C.MPV_EVENT_QUEUE_OVERFLOW
+	/**
+	 * Triggered if a hook handler was registered with mpv_hook_add(), and the
+	 * hook is invoked. If you receive this, you must handle it, and continue
+	 * the hook with mpv_hook_continue().
+	 * See also mpv_event and mpv_event_hook.
+	 */
+	EVENT_HOOK = C.MPV_EVENT_HOOK
 	// Internal note: adjust INTERNAL_EVENT_BASE when adding new events.
 )
 
@@ -520,6 +527,10 @@ func (eid EventId) String() string {
 	case EVENT_QUEUE_OVERFLOW:
 		{
 			return "EVENT_QUEUE_OVERFLOW"
+		}
+	case EVENT_HOOK:
+		{
+			return "EVENT_HOOK"
 		}
 	}
 	return "UNKNOWN_EVENT"

@@ -145,6 +145,18 @@ func (m *Mpv) CommandNodeAsync(command []string) int {
 	return -1
 }
 
+func (m *Mpv) HookAdd(userdata uint64, name string, priority int) error {
+	cname := C.CString(name)
+	cuserdata := C.uint64_t(userdata)
+	cpriority := C.int(priority)
+	return NewError(C.mpv_hook_add(m.handle, cuserdata, cname, cpriority))
+}
+
+func (m *Mpv) HookContinue(id uint64) error {
+	cid := C.uint64_t(id)
+	return NewError(C.mpv_hook_continue(m.handle, cid))
+}
+
 func (m *Mpv) SetProperty(name string, format Format, data interface{}) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
@@ -325,6 +337,13 @@ func (m *Mpv) WaitEvent(timeout float32) *Event {
 		efr.Reason = EndFileReason(eef.reason)
 		efr.ErrCode = Error(eef.error)
 		e.Data = efr
+	} else if e.Event_Id == EVENT_HOOK {
+		eh := (*C.struct_mpv_event_hook)(cevent.data)
+		ehr := EventHook{
+			ID:   uint64(eh.id),
+			Name: C.GoString(eh.name),
+		}
+		e.Data = ehr
 	} else {
 		e.Data = cevent.data
 	}
@@ -423,4 +442,9 @@ type Event struct {
 type EventEndFile struct {
 	Reason  EndFileReason
 	ErrCode Error
+}
+
+type EventHook struct {
+	Name string
+	ID   uint64
 }
